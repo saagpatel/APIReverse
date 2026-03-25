@@ -1,159 +1,159 @@
-import { useEffect, useState } from "react";
-import { createSession, listSessions } from "./lib/tauri";
-import type { Session } from "./types";
+import { useState } from "react";
+import { CaptureBar } from "./components/CaptureBar";
+import { EndpointMap } from "./components/EndpointMap";
+import { RequestList } from "./components/RequestList";
+import { useCapture } from "./hooks/useCapture";
+import { useSession } from "./hooks/useSession";
 
 function App() {
-	const [sessions, setSessions] = useState<Session[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+	const session = useSession();
+	const capture = useCapture(session.activeSession?.id ?? null);
+	const [showNoise, setShowNoise] = useState(false);
 
-	useEffect(() => {
-		listSessions()
-			.then(setSessions)
-			.catch((e: unknown) => setError(String(e)))
-			.finally(() => setLoading(false));
-	}, []);
+	async function handleNewSession() {
+		const name = `Session ${new Date().toLocaleString("en-US", {
+			month: "short",
+			day: "numeric",
+			hour: "numeric",
+			minute: "2-digit",
+		})}`;
+		await session.create(name);
+	}
 
-	async function handleCreateSession() {
-		try {
-			const session = await createSession("Test Session", "extension");
-			setSessions((prev) => [session, ...prev]);
-		} catch (e: unknown) {
-			setError(String(e));
-		}
+	async function handleStart() {
+		await session.start();
+	}
+
+	async function handleStop() {
+		await session.stop();
 	}
 
 	return (
 		<div
-			className="min-h-screen p-8"
+			className="flex h-screen flex-col"
 			style={{ background: "var(--bg-primary)" }}
 		>
-			<header className="mb-12">
-				<h1
-					className="text-4xl font-light tracking-tight"
-					style={{ color: "var(--text-primary)" }}
-				>
-					apispy
-				</h1>
-				<p className="mt-2 text-sm" style={{ color: "var(--text-secondary)" }}>
-					API reverse engineering toolkit
-				</p>
-			</header>
+			{/* Top bar */}
+			<CaptureBar
+				sessionName={session.activeSession?.name ?? null}
+				isCapturing={session.isCapturing}
+				requestCount={capture.requestCount}
+				endpointCount={capture.endpointCount}
+				onStart={handleStart}
+				onStop={handleStop}
+				onNewSession={handleNewSession}
+			/>
 
-			{error && (
+			{/* Error banner */}
+			{session.error && (
 				<div
-					className="mb-6 rounded-lg border px-4 py-3 text-sm"
+					className="flex items-center justify-between border-b px-4 py-2 text-sm"
 					style={{
 						borderColor: "#dc2626",
 						background: "rgba(220, 38, 38, 0.1)",
 						color: "#fca5a5",
 					}}
 				>
-					{error}
+					<span>{session.error}</span>
+					<button
+						onClick={session.clearError}
+						className="ml-4 text-xs underline"
+					>
+						Dismiss
+					</button>
 				</div>
 			)}
 
-			<section>
-				<div className="mb-6 flex items-center justify-between">
-					<h2
-						className="text-lg font-medium"
-						style={{ color: "var(--text-primary)" }}
-					>
-						Sessions
-					</h2>
-					<button
-						onClick={handleCreateSession}
-						className="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-						style={{
-							background: "var(--accent)",
-							color: "#fff",
-						}}
-						onMouseEnter={(e) =>
-							(e.currentTarget.style.background = "var(--accent-hover)")
-						}
-						onMouseLeave={(e) =>
-							(e.currentTarget.style.background = "var(--accent)")
-						}
-					>
-						New Session
-					</button>
-				</div>
-
-				{loading ? (
-					<p style={{ color: "var(--text-secondary)" }}>Loading...</p>
-				) : sessions.length === 0 ? (
+			{/* Main content */}
+			{session.activeSession ? (
+				<div className="flex min-h-0 flex-1">
+					{/* Request list — left panel */}
 					<div
-						className="rounded-xl border p-12 text-center"
-						style={{
-							borderColor: "var(--border)",
-							background: "var(--bg-secondary)",
-						}}
+						className="flex-1 border-r"
+						style={{ borderColor: "var(--border)" }}
 					>
-						<p
-							className="text-lg font-light"
-							style={{ color: "var(--text-secondary)" }}
+						<RequestList
+							requests={capture.requests}
+							showNoise={showNoise}
+							onToggleNoise={() => setShowNoise((v) => !v)}
+						/>
+					</div>
+
+					{/* Endpoint map — right panel */}
+					<div className="flex-1">
+						<EndpointMap endpoints={capture.endpoints} />
+					</div>
+				</div>
+			) : (
+				<div className="flex flex-1 items-center justify-center">
+					<div className="text-center">
+						<h2
+							className="mb-2 text-2xl font-light tracking-tight"
+							style={{ color: "var(--text-primary)" }}
 						>
-							No sessions yet
-						</p>
+							apispy
+						</h2>
 						<p
-							className="mt-2 text-sm"
+							className="mb-8 text-sm"
 							style={{ color: "var(--text-secondary)" }}
 						>
 							Create a session to start capturing API traffic
 						</p>
+
+						{session.sessions.length > 0 && (
+							<div className="mb-8">
+								<p
+									className="mb-3 text-xs uppercase tracking-wider"
+									style={{ color: "var(--text-secondary)" }}
+								>
+									Recent sessions
+								</p>
+								<ul className="space-y-2">
+									{session.sessions.slice(0, 5).map((s) => (
+										<li key={s.id}>
+											<button
+												onClick={() => session.selectSession(s)}
+												className="w-64 rounded-lg border px-4 py-3 text-left transition-colors hover:bg-white/5"
+												style={{
+													borderColor: "var(--border)",
+												}}
+											>
+												<span
+													className="block text-sm font-medium"
+													style={{
+														color: "var(--text-primary)",
+													}}
+												>
+													{s.name}
+												</span>
+												<span
+													className="text-xs"
+													style={{
+														color: "var(--text-secondary)",
+													}}
+												>
+													{s.requestCount} requests &middot; {s.status}
+												</span>
+											</button>
+										</li>
+									))}
+								</ul>
+							</div>
+						)}
+
+						<button
+							onClick={handleNewSession}
+							className="rounded-lg px-6 py-2.5 text-sm font-medium transition-colors"
+							style={{
+								background: "var(--accent)",
+								color: "#fff",
+							}}
+						>
+							New Session
+						</button>
 					</div>
-				) : (
-					<ul className="space-y-3">
-						{sessions.map((s) => (
-							<li
-								key={s.id}
-								className="rounded-xl border px-5 py-4"
-								style={{
-									borderColor: "var(--border)",
-									background: "var(--bg-secondary)",
-								}}
-							>
-								<div className="flex items-center justify-between">
-									<div>
-										<span
-											className="font-medium"
-											style={{ color: "var(--text-primary)" }}
-										>
-											{s.name}
-										</span>
-										<span
-											className="ml-3 text-xs uppercase tracking-wider"
-											style={{ color: "var(--text-secondary)" }}
-										>
-											{s.captureMode}
-										</span>
-									</div>
-									<div className="flex items-center gap-4">
-										<span
-											className="text-sm"
-											style={{ color: "var(--text-secondary)" }}
-										>
-											{s.requestCount} requests
-										</span>
-										<span
-											className="rounded-full px-2 py-0.5 text-xs"
-											style={{
-												background:
-													s.status === "active"
-														? "rgba(34, 197, 94, 0.15)"
-														: "rgba(163, 163, 163, 0.15)",
-												color: s.status === "active" ? "#4ade80" : "#a3a3a3",
-											}}
-										>
-											{s.status}
-										</span>
-									</div>
-								</div>
-							</li>
-						))}
-					</ul>
-				)}
-			</section>
+				</div>
+			)}
 		</div>
 	);
 }

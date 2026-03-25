@@ -1,5 +1,18 @@
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FilterConfig {
+    #[serde(default)]
+    pub allowlist: Vec<String>,
+    #[serde(default)]
+    pub denylist: Vec<String>,
+    #[serde(default)]
+    pub noise_presets: Vec<String>,
+    #[serde(default)]
+    pub path_exclude_patterns: Vec<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Session {

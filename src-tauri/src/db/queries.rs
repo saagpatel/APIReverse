@@ -203,6 +203,60 @@ pub fn get_requests(
     Ok(requests)
 }
 
+pub fn get_requests_after(
+    conn: &Connection,
+    session_id: &str,
+    after_id: i64,
+) -> Result<Vec<CapturedRequest>, rusqlite::Error> {
+    let mut stmt = conn.prepare(
+        "SELECT id, session_id, capture_source, method, url, normalized_path, host, path,
+                query_params, request_headers, request_body, request_content_type,
+                response_status, response_headers, response_body, response_content_type,
+                duration_ms, captured_at, is_noise, is_duplicate
+         FROM requests WHERE session_id = ?1 AND id > ?2
+         ORDER BY id ASC",
+    )?;
+    let requests = stmt
+        .query_map(params![session_id, after_id], |row| {
+            Ok(CapturedRequest {
+                id: row.get(0)?,
+                session_id: row.get(1)?,
+                capture_source: row.get(2)?,
+                method: row.get(3)?,
+                url: row.get(4)?,
+                normalized_path: row.get(5)?,
+                host: row.get(6)?,
+                path: row.get(7)?,
+                query_params: row.get(8)?,
+                request_headers: row.get(9)?,
+                request_body: row.get(10)?,
+                request_content_type: row.get(11)?,
+                response_status: row.get(12)?,
+                response_headers: row.get(13)?,
+                response_body: row.get(14)?,
+                response_content_type: row.get(15)?,
+                duration_ms: row.get(16)?,
+                captured_at: row.get(17)?,
+                is_noise: row.get::<_, i64>(18)? != 0,
+                is_duplicate: row.get::<_, i64>(19)? != 0,
+            })
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(requests)
+}
+
+pub fn update_session_status(
+    conn: &Connection,
+    session_id: &str,
+    status: &str,
+) -> Result<(), rusqlite::Error> {
+    conn.execute(
+        "UPDATE sessions SET status = ?2, ended_at = CASE WHEN ?2 = 'complete' THEN CURRENT_TIMESTAMP ELSE ended_at END WHERE id = ?1",
+        params![session_id, status],
+    )?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

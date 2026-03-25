@@ -6,6 +6,8 @@ mod proxy;
 use std::sync::{Arc, Mutex};
 use tauri::Manager;
 
+use commands::capture::{ActiveCapture, ActiveCaptureInner};
+
 pub type DbPool = Arc<Mutex<rusqlite::Connection>>;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -20,6 +22,10 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::session::create_session,
             commands::session::list_sessions,
+            commands::capture::get_requests,
+            commands::capture::get_endpoints,
+            commands::capture::start_capture,
+            commands::capture::stop_capture,
         ])
         .setup(|app| {
             let data_dir = dirs::home_dir()
@@ -41,6 +47,7 @@ pub fn run() {
             tracing::info!("Wrote state.json to {}", state_path.display());
 
             app.manage(Arc::new(Mutex::new(conn)) as DbPool);
+            app.manage(Arc::new(Mutex::new(ActiveCaptureInner::new())) as ActiveCapture);
             Ok(())
         })
         .run(tauri::generate_context!())
