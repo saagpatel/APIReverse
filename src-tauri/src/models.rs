@@ -66,3 +66,12 @@ pub struct Endpoint {
     pub sample_request_ids: Option<String>,
     pub auth_detected: Option<String>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProxyStatus {
+    pub running: bool,
+    pub port: u16,
+    pub ca_installed: bool,
+    pub ca_path: String,
+}

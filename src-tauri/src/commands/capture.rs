@@ -13,6 +13,7 @@ pub type ActiveCapture = Arc<Mutex<ActiveCaptureInner>>;
 pub struct ActiveCaptureInner {
     pub session_id: Option<String>,
     pub cancel_tx: Option<watch::Sender<bool>>,
+    pub proxy: Option<crate::proxy::ProxyServer>,
 }
 
 impl ActiveCaptureInner {
@@ -20,6 +21,7 @@ impl ActiveCaptureInner {
         Self {
             session_id: None,
             cancel_tx: None,
+            proxy: None,
         }
     }
 }

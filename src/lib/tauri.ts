@@ -1,5 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { CapturedRequest, Endpoint, Session } from "../types";
+import type {
+	CapturedRequest,
+	CaStatus,
+	Endpoint,
+	ProxyStatus,
+	Session,
+} from "../types";
 
 export async function createSession(
 	name: string,
@@ -37,4 +43,24 @@ export async function startCapture(sessionId: string): Promise<void> {
 
 export async function stopCapture(): Promise<void> {
 	return invoke("stop_capture");
+}
+
+export async function startProxy(sessionId: string): Promise<ProxyStatus> {
+	return invoke<ProxyStatus>("start_proxy", { sessionId });
+}
+
+export async function stopProxy(): Promise<void> {
+	return invoke("stop_proxy");
+}
+
+export async function getProxyStatus(): Promise<ProxyStatus> {
+	return invoke<ProxyStatus>("get_proxy_status");
+}
+
+export async function getCaStatus(): Promise<CaStatus> {
+	return invoke<CaStatus>("get_ca_status");
+}
+
+export async function installCa(): Promise<void> {
+	return invoke("install_ca");
 }

@@ -92,5 +92,10 @@ export interface ProxyStatus {
 	port: number;
 	caInstalled: boolean;
 	caPath: string;
-	requestsIntercepted: number;
+}
+
+export interface CaStatus {
+	exists: boolean;
+	trusted: boolean;
+	certPath: string;
 }

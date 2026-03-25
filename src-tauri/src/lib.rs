@@ -26,6 +26,11 @@ pub fn run() {
             commands::capture::get_endpoints,
             commands::capture::start_capture,
             commands::capture::stop_capture,
+            commands::proxy::start_proxy,
+            commands::proxy::stop_proxy,
+            commands::proxy::get_proxy_status,
+            commands::proxy::get_ca_status,
+            commands::proxy::install_ca,
         ])
         .setup(|app| {
             let data_dir = dirs::home_dir()

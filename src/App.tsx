@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CASetupModal } from "./components/CASetupModal";
 import { CaptureBar } from "./components/CaptureBar";
 import { EndpointMap } from "./components/EndpointMap";
 import { RequestList } from "./components/RequestList";
@@ -37,11 +38,14 @@ function App() {
 			<CaptureBar
 				sessionName={session.activeSession?.name ?? null}
 				isCapturing={session.isCapturing}
+				captureMode={session.captureMode}
+				proxyStatus={session.proxyStatus}
 				requestCount={capture.requestCount}
 				endpointCount={capture.endpointCount}
 				onStart={handleStart}
 				onStop={handleStop}
 				onNewSession={handleNewSession}
+				onModeChange={session.setCaptureMode}
 			/>
 
 			{/* Error banner */}
@@ -154,6 +158,13 @@ function App() {
 					</div>
 				</div>
 			)}
+
+			{/* CA Setup Modal */}
+			<CASetupModal
+				open={session.showCaModal}
+				onClose={() => session.setShowCaModal(false)}
+				onInstalled={() => session.setShowCaModal(false)}
+			/>
 		</div>
 	);
 }
