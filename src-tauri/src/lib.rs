@@ -1,0 +1,69 @@
+mod commands;
+mod db;
+mod models;
+mod proxy;
+
+use std::sync::{Arc, Mutex};
+use tauri::Manager;
+
+use commands::capture::{ActiveCapture, ActiveCaptureInner};
+
+pub type DbPool = Arc<Mutex<rusqlite::Connection>>;
+
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    tracing_subscriber::fmt()
+        .with_env_filter("apispy=info")
+        .init();
+
+    tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
+        .invoke_handler(tauri::generate_handler![
+            commands::session::create_session,
+            commands::session::list_sessions,
+            commands::capture::get_requests,
+            commands::capture::get_endpoints,
+            commands::capture::start_capture,
+            commands::capture::stop_capture,
+            commands::proxy::start_proxy,
+            commands::proxy::stop_proxy,
+            commands::proxy::get_proxy_status,
+            commands::proxy::get_ca_status,
+            commands::proxy::install_ca,
+            commands::inference::save_inference_result,
+            commands::inference::get_inference_results,
+            commands::inference::get_requests_by_ids,
+            commands::inference::get_setting,
+            commands::inference::set_setting,
+            commands::inference::update_inference_result,
+            commands::session::rename_session,
+            commands::session::delete_session,
+            commands::session::update_filter_config,
+        ])
+        .setup(|app| {
+            let data_dir = dirs::home_dir()
+                .expect("could not resolve home directory")
+                .join("Library/Application Support/apispy");
+            std::fs::create_dir_all(&data_dir)?;
+
+            let db_path = data_dir.join("apispy.db");
+            tracing::info!("Opening database at {}", db_path.display());
+            let conn =
+                db::init_db(&db_path).map_err(|e| format!("Failed to init database: {e}"))?;
+
+            // Write state.json for native host to discover DB path
+            let state = serde_json::json!({
+                "dbPath": db_path.to_string_lossy()
+            });
+            let state_path = data_dir.join("state.json");
+            std::fs::write(&state_path, state.to_string())?;
+            tracing::info!("Wrote state.json to {}", state_path.display());
+
+            app.manage(Arc::new(Mutex::new(conn)) as DbPool);
+            app.manage(Arc::new(Mutex::new(ActiveCaptureInner::new())) as ActiveCapture);
+            Ok(())
+        })
+        .run(tauri::generate_context!())
+        .expect("error running tauri application");
+}

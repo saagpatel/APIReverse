@@ -1,0 +1,145 @@
+import { invoke } from "@tauri-apps/api/core";
+import type {
+	CapturedRequest,
+	CaStatus,
+	Endpoint,
+	InferenceResult,
+	ProxyStatus,
+	Session,
+} from "../types";
+
+export async function createSession(
+	name: string,
+	captureMode: "extension" | "mitm" | "mixed",
+): Promise<Session> {
+	return invoke<Session>("create_session", {
+		name,
+		captureMode,
+	});
+}
+
+export async function listSessions(): Promise<Session[]> {
+	return invoke<Session[]>("list_sessions");
+}
+
+export async function getRequests(
+	sessionId: string,
+	limit: number,
+	offset: number,
+): Promise<CapturedRequest[]> {
+	return invoke<CapturedRequest[]>("get_requests", {
+		sessionId,
+		limit,
+		offset,
+	});
+}
+
+export async function getEndpoints(sessionId: string): Promise<Endpoint[]> {
+	return invoke<Endpoint[]>("get_endpoints", { sessionId });
+}
+
+export async function startCapture(sessionId: string): Promise<void> {
+	return invoke("start_capture", { sessionId });
+}
+
+export async function stopCapture(): Promise<void> {
+	return invoke("stop_capture");
+}
+
+export async function startProxy(sessionId: string): Promise<ProxyStatus> {
+	return invoke<ProxyStatus>("start_proxy", { sessionId });
+}
+
+export async function stopProxy(): Promise<void> {
+	return invoke("stop_proxy");
+}
+
+export async function getProxyStatus(): Promise<ProxyStatus> {
+	return invoke<ProxyStatus>("get_proxy_status");
+}
+
+export async function getCaStatus(): Promise<CaStatus> {
+	return invoke<CaStatus>("get_ca_status");
+}
+
+export async function installCa(): Promise<void> {
+	return invoke("install_ca");
+}
+
+// --- Inference ---
+
+export async function saveInferenceResult(payload: {
+	endpointId: number;
+	sessionId: string;
+	inferredName: string | null;
+	inferredDescription: string | null;
+	requestBodySchema: string | null;
+	responseBodySchema: string | null;
+	pathParams: string | null;
+	queryParamDescriptions: string | null;
+	authScheme: string | null;
+	tags: string | null;
+	rawClaudeResponse: string | null;
+	tokensUsed: number;
+	modelUsed: string;
+}): Promise<number> {
+	return invoke<number>("save_inference_result", payload);
+}
+
+export async function getInferenceResults(
+	sessionId: string,
+): Promise<InferenceResult[]> {
+	return invoke<InferenceResult[]>("get_inference_results", { sessionId });
+}
+
+export async function getRequestsByIds(
+	ids: number[],
+): Promise<CapturedRequest[]> {
+	return invoke<CapturedRequest[]>("get_requests_by_ids", { ids });
+}
+
+// --- Settings ---
+
+export async function getSetting(key: string): Promise<string | null> {
+	return invoke<string | null>("get_setting", { key });
+}
+
+export async function setSetting(key: string, value: string): Promise<void> {
+	return invoke("set_setting", { key, value });
+}
+
+// --- Session CRUD ---
+
+export async function renameSession(
+	sessionId: string,
+	name: string,
+): Promise<void> {
+	return invoke("rename_session", { sessionId, name });
+}
+
+export async function deleteSession(sessionId: string): Promise<void> {
+	return invoke("delete_session", { sessionId });
+}
+
+export async function updateFilterConfig(
+	sessionId: string,
+	filterConfig: string,
+): Promise<void> {
+	return invoke("update_filter_config", { sessionId, filterConfig });
+}
+
+// --- Inference Update ---
+
+export async function updateInferenceResult(
+	id: number,
+	inferredName?: string,
+	inferredDescription?: string,
+	tags?: string,
+): Promise<void> {
+	return invoke("update_inference_result", {
+		id,
+		inferredName: inferredName ?? null,
+		inferredDescription: inferredDescription ?? null,
+		tags: tags ?? null,
+	});
+}

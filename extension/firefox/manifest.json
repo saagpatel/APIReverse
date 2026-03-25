@@ -1,0 +1,20 @@
+{
+	"manifest_version": 2,
+	"name": "APIspy",
+	"version": "0.1.0",
+	"description": "Captures HTTP traffic for API reverse engineering",
+	"permissions": [
+		"webRequest",
+		"webRequestBlocking",
+		"nativeMessaging",
+		"<all_urls>"
+	],
+	"background": {
+		"scripts": ["background.js"]
+	},
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "apispy@local"
+		}
+	}
+}

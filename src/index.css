@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+:root {
+	--bg-primary: #0a0a0a;
+	--bg-secondary: #141414;
+	--bg-tertiary: #1e1e1e;
+	--text-primary: #e5e5e5;
+	--text-secondary: #a3a3a3;
+	--accent: #3b82f6;
+	--accent-hover: #2563eb;
+	--border: #262626;
+}
+
+html {
+	color-scheme: dark;
+}
+
+body {
+	margin: 0;
+	background-color: var(--bg-primary);
+	color: var(--text-primary);
+	font-family: "Berkeley Mono", "SF Mono", ui-monospace, monospace;
+}
+
+#root {
+	min-height: 100vh;
+}
+
+@keyframes pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.3;
+	}
+}
