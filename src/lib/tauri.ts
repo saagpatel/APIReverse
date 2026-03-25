@@ -107,3 +107,39 @@ export async function getSetting(key: string): Promise<string | null> {
 export async function setSetting(key: string, value: string): Promise<void> {
 	return invoke("set_setting", { key, value });
 }
+
+// --- Session CRUD ---
+
+export async function renameSession(
+	sessionId: string,
+	name: string,
+): Promise<void> {
+	return invoke("rename_session", { sessionId, name });
+}
+
+export async function deleteSession(sessionId: string): Promise<void> {
+	return invoke("delete_session", { sessionId });
+}
+
+export async function updateFilterConfig(
+	sessionId: string,
+	filterConfig: string,
+): Promise<void> {
+	return invoke("update_filter_config", { sessionId, filterConfig });
+}
+
+// --- Inference Update ---
+
+export async function updateInferenceResult(
+	id: number,
+	inferredName?: string,
+	inferredDescription?: string,
+	tags?: string,
+): Promise<void> {
+	return invoke("update_inference_result", {
+		id,
+		inferredName: inferredName ?? null,
+		inferredDescription: inferredDescription ?? null,
+		tags: tags ?? null,
+	});
+}

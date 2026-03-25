@@ -13,6 +13,8 @@ interface CaptureBarProps {
 	onStop: () => void;
 	onNewSession: () => void;
 	onModeChange: (mode: CaptureMode) => void;
+	onToggleSidebar: () => void;
+	onToggleFilters?: () => void;
 }
 
 const MODE_OPTIONS: { value: CaptureMode; label: string }[] = [
@@ -32,6 +34,8 @@ export function CaptureBar({
 	onStop,
 	onNewSession,
 	onModeChange,
+	onToggleSidebar,
+	onToggleFilters,
 }: CaptureBarProps) {
 	return (
 		<div
@@ -42,6 +46,16 @@ export function CaptureBar({
 			}}
 		>
 			<div className="flex items-center gap-4">
+				{/* Sessions button */}
+				<button
+					onClick={onToggleSidebar}
+					className="rounded px-2 py-1 text-xs transition-colors hover:bg-white/10"
+					style={{ color: "var(--text-secondary)" }}
+					title="Sessions"
+				>
+					Sessions
+				</button>
+
 				{/* Recording indicator */}
 				<div className="flex items-center gap-2">
 					{isCapturing && (
@@ -140,6 +154,15 @@ export function CaptureBar({
 							</button>
 						)
 					) : null}
+					{onToggleFilters && (
+						<button
+							onClick={onToggleFilters}
+							className="rounded-lg px-3 py-1.5 text-sm transition-colors"
+							style={{ color: "var(--text-secondary)" }}
+						>
+							Filters
+						</button>
+					)}
 					<button
 						onClick={onNewSession}
 						className="rounded-lg px-4 py-1.5 text-sm font-medium transition-colors"

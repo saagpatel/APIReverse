@@ -70,3 +70,22 @@ pub fn set_setting(db: State<'_, DbPool>, key: String, value: String) -> Result<
     let conn = db.lock().map_err(|e| e.to_string())?;
     queries::set_setting(&conn, &key, &value).map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub fn update_inference_result(
+    db: State<'_, DbPool>,
+    id: i64,
+    inferred_name: Option<String>,
+    inferred_description: Option<String>,
+    tags: Option<String>,
+) -> Result<(), String> {
+    let conn = db.lock().map_err(|e| e.to_string())?;
+    queries::update_inference_result(
+        &conn,
+        id,
+        inferred_name.as_deref(),
+        inferred_description.as_deref(),
+        tags.as_deref(),
+    )
+    .map_err(|e| e.to_string())
+}

@@ -413,6 +413,58 @@ pub fn set_setting(conn: &Connection, key: &str, value: &str) -> Result<(), rusq
     Ok(())
 }
 
+// --- Session CRUD ---
+
+pub fn rename_session(
+    conn: &Connection,
+    session_id: &str,
+    new_name: &str,
+) -> Result<(), rusqlite::Error> {
+    conn.execute(
+        "UPDATE sessions SET name = ?2 WHERE id = ?1",
+        params![session_id, new_name],
+    )?;
+    Ok(())
+}
+
+pub fn delete_session(conn: &Connection, session_id: &str) -> Result<(), rusqlite::Error> {
+    // CASCADE handles requests, endpoints, inference_results
+    conn.execute("DELETE FROM sessions WHERE id = ?1", params![session_id])?;
+    Ok(())
+}
+
+pub fn update_filter_config(
+    conn: &Connection,
+    session_id: &str,
+    filter_config_json: &str,
+) -> Result<(), rusqlite::Error> {
+    conn.execute(
+        "UPDATE sessions SET filter_config = ?2 WHERE id = ?1",
+        params![session_id, filter_config_json],
+    )?;
+    Ok(())
+}
+
+// --- Inference Result Update ---
+
+pub fn update_inference_result(
+    conn: &Connection,
+    id: i64,
+    inferred_name: Option<&str>,
+    inferred_description: Option<&str>,
+    tags: Option<&str>,
+) -> Result<(), rusqlite::Error> {
+    conn.execute(
+        "UPDATE inference_results SET
+            inferred_name = COALESCE(?2, inferred_name),
+            inferred_description = COALESCE(?3, inferred_description),
+            tags = COALESCE(?4, tags)
+         WHERE id = ?1",
+        params![id, inferred_name, inferred_description, tags],
+    )?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

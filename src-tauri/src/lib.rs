@@ -36,6 +36,10 @@ pub fn run() {
             commands::inference::get_requests_by_ids,
             commands::inference::get_setting,
             commands::inference::set_setting,
+            commands::inference::update_inference_result,
+            commands::session::rename_session,
+            commands::session::delete_session,
+            commands::session::update_filter_config,
         ])
         .setup(|app| {
             let data_dir = dirs::home_dir()

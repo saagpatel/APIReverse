@@ -7,9 +7,13 @@ const KEEPALIVE_INTERVAL_MS = 20000;
 
 // --- State ---
 let isRecording = false;
+var bodyCaptureEnabled = false;
 let port = null;
 let requestBuffer = [];
 let flushTimer = null;
+
+// Body capture: store bodies keyed by URL+timestamp for correlation
+const pendingBodies = new Map();
 let keepaliveTimer = null;
 
 // Track request start times for duration calculation
@@ -110,6 +114,10 @@ chrome.webRequest.onCompleted.addListener(
 			}
 		}
 
+		// Check for captured bodies from content script
+		const bodyData = pendingBodies.get(details.url);
+		if (bodyData) pendingBodies.delete(details.url);
+
 		const request = {
 			method: details.method,
 			url: details.url,
@@ -117,6 +125,8 @@ chrome.webRequest.onCompleted.addListener(
 			responseStatus: details.statusCode,
 			responseHeaders: headersToObject(details.responseHeaders || []),
 			durationMs: durationMs,
+			requestBody: bodyData?.requestBody ?? null,
+			responseBody: bodyData?.responseBody ?? null,
 		};
 
 		requestBuffer.push(request);
@@ -219,7 +229,44 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 		sendResponse({
 			status: isRecording ? "recording" : "idle",
 			buffered: requestBuffer.length,
+			bodyCaptureEnabled,
 		});
+	} else if (msg.action === "enableBodyCapture") {
+		bodyCaptureEnabled = true;
+		chrome.tabs.query({}, (tabs) => {
+			for (const tab of tabs) {
+				if (tab.id)
+					chrome.tabs
+						.sendMessage(tab.id, { type: "enableBodyCapture" })
+						.catch(() => {});
+			}
+		});
+		sendResponse({ bodyCaptureEnabled: true });
+	} else if (msg.action === "disableBodyCapture") {
+		bodyCaptureEnabled = false;
+		chrome.tabs.query({}, (tabs) => {
+			for (const tab of tabs) {
+				if (tab.id)
+					chrome.tabs
+						.sendMessage(tab.id, { type: "disableBodyCapture" })
+						.catch(() => {});
+			}
+		});
+		sendResponse({ bodyCaptureEnabled: false });
+	} else if (msg.type === "bodyCapture" && isRecording) {
+		// Body from content script — attach to pending buffer entries by URL
+		if (msg.url) {
+			pendingBodies.set(msg.url, {
+				requestBody: msg.requestBody,
+				responseBody: msg.responseBody,
+				timestamp: msg.timestamp,
+			});
+			// Prune old entries
+			const now = Date.now();
+			for (const [url, entry] of pendingBodies) {
+				if (now - entry.timestamp > 10000) pendingBodies.delete(url);
+			}
+		}
 	}
 	return true;
 });

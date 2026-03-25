@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	createSession,
+	deleteSession as deleteSessionCmd,
 	getCaStatus,
 	getProxyStatus,
+	getSetting,
 	listSessions,
+	renameSession as renameSessionCmd,
 	startCapture,
 	startProxy,
 	stopCapture,
@@ -124,6 +127,49 @@ export function useSession() {
 		setIsCapturing(false);
 	}, []);
 
+	const rename = useCallback(
+		async (sessionId: string, name: string) => {
+			try {
+				await renameSessionCmd(sessionId, name);
+				setSessions((prev) =>
+					prev.map((s) => (s.id === sessionId ? { ...s, name } : s)),
+				);
+				if (activeSession?.id === sessionId) {
+					setActiveSession((prev) => (prev ? { ...prev, name } : null));
+				}
+			} catch (e: unknown) {
+				setError(String(e));
+			}
+		},
+		[activeSession],
+	);
+
+	const remove = useCallback(
+		async (sessionId: string) => {
+			try {
+				await deleteSessionCmd(sessionId);
+				setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+				if (activeSession?.id === sessionId) {
+					setActiveSession(null);
+					setIsCapturing(false);
+				}
+			} catch (e: unknown) {
+				setError(String(e));
+			}
+		},
+		[activeSession],
+	);
+
+	const [showOnboarding, setShowOnboarding] = useState(false);
+
+	useEffect(() => {
+		getSetting("onboarding_complete")
+			.then((val) => {
+				if (!val) setShowOnboarding(true);
+			})
+			.catch(() => {});
+	}, []);
+
 	return {
 		sessions,
 		activeSession,
@@ -131,13 +177,17 @@ export function useSession() {
 		captureMode,
 		proxyStatus,
 		showCaModal,
+		showOnboarding,
 		error,
 		create,
 		start,
 		stop,
 		selectSession,
+		rename,
+		remove,
 		setCaptureMode,
 		setShowCaModal,
+		setShowOnboarding,
 		clearError: () => setError(null),
 	};
 }
