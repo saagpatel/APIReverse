@@ -1,0 +1,12 @@
+{
+	"manifest_version": 3,
+	"name": "APIspy",
+	"version": "0.1.0",
+	"description": "Captures HTTP traffic for API reverse engineering",
+	"permissions": ["webRequest", "nativeMessaging"],
+	"host_permissions": ["<all_urls>"],
+	"background": {
+		"service_worker": "background.js"
+	},
+	"key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr5WT8hBzLCNHl5M0UrD1wZvBk9gZ7+1KLj0WYrPbJ+9Q6E8LhC5jZ2Z7rZ6xN0dZ3uQ8FN9bJ6kN7oG+L1Y8Z3+1D1f0+hW9cR6fQ0N7dZ3bK8mN7oG+L1Y8Z3+1D1f0+hW9cR6fQ0N7dZ3bK8mN7oG+L1Y8Z3+1D1f0+hW9cR6fQ0N7dZ3bK8mN7oG+L1Y8Z3+1D1f0+hW9cR6fQ0N7dZ3bK8mN7oG+L1Y8Z3+1D1f0+hW9cR6fQ0N7dZ3bK8mN7oG+L1Y8Z3+1D1f0+hW9cR6fQ0N7dZ3bK8mN7oG+L1Y8Z3+1D1f0+hW9cR6fQ0N7dZ3bK8mN7oG+L1Y8Z3+1D1f0+hW9cR6fQ0N7dZ3bK8mN7oG+L1Y8Z3+1D1f0QIDAQAB"
+}
