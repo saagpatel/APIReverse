@@ -61,14 +61,16 @@ export interface InferenceResult {
 	sessionId: string;
 	inferredName?: string;
 	inferredDescription?: string;
-	requestBodySchema?: JsonSchema;
-	responseBodySchema?: JsonSchema;
-	pathParams?: PathParam[];
-	queryParamDescriptions?: Record<string, string>;
-	authScheme?: "bearer" | "basic" | "apikey" | "none";
-	tags?: string[];
+	requestBodySchema?: string;
+	responseBodySchema?: string;
+	pathParams?: string;
+	queryParamDescriptions?: string;
+	authScheme?: string;
+	tags?: string;
+	rawClaudeResponse?: string;
 	tokensUsed?: number;
 	inferredAt: string;
+	modelUsed?: string;
 }
 
 export interface PathParam {

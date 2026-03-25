@@ -80,3 +80,12 @@ pub fn migrate_v2(conn: &Connection) -> Result<(), rusqlite::Error> {
         CREATE INDEX idx_inference_session ON inference_results(session_id);",
     )
 }
+
+pub fn migrate_v3(conn: &Connection) -> Result<(), rusqlite::Error> {
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        );",
+    )
+}

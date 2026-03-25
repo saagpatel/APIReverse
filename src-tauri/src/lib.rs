@@ -31,6 +31,11 @@ pub fn run() {
             commands::proxy::get_proxy_status,
             commands::proxy::get_ca_status,
             commands::proxy::install_ca,
+            commands::inference::save_inference_result,
+            commands::inference::get_inference_results,
+            commands::inference::get_requests_by_ids,
+            commands::inference::get_setting,
+            commands::inference::set_setting,
         ])
         .setup(|app| {
             let data_dir = dirs::home_dir()

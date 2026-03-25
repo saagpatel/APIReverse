@@ -1,15 +1,22 @@
 import { useState } from "react";
 import { CASetupModal } from "./components/CASetupModal";
 import { CaptureBar } from "./components/CaptureBar";
+import { CollectionPreview } from "./components/CollectionPreview";
 import { EndpointMap } from "./components/EndpointMap";
+import { InferencePanel } from "./components/InferencePanel";
 import { RequestList } from "./components/RequestList";
 import { useCapture } from "./hooks/useCapture";
+import { useInference } from "./hooks/useInference";
 import { useSession } from "./hooks/useSession";
+
+type TabId = "capture" | "analysis" | "export";
 
 function App() {
 	const session = useSession();
 	const capture = useCapture(session.activeSession?.id ?? null);
+	const inference = useInference(session.activeSession?.id ?? null);
 	const [showNoise, setShowNoise] = useState(false);
+	const [activeTab, setActiveTab] = useState<TabId>("capture");
 
 	async function handleNewSession() {
 		const name = `Session ${new Date().toLocaleString("en-US", {
@@ -19,14 +26,7 @@ function App() {
 			minute: "2-digit",
 		})}`;
 		await session.create(name);
-	}
-
-	async function handleStart() {
-		await session.start();
-	}
-
-	async function handleStop() {
-		await session.stop();
+		setActiveTab("capture");
 	}
 
 	return (
@@ -42,8 +42,8 @@ function App() {
 				proxyStatus={session.proxyStatus}
 				requestCount={capture.requestCount}
 				endpointCount={capture.endpointCount}
-				onStart={handleStart}
-				onStop={handleStop}
+				onStart={() => session.start()}
+				onStop={() => session.stop()}
 				onNewSession={handleNewSession}
 				onModeChange={session.setCaptureMode}
 			/>
@@ -68,26 +68,81 @@ function App() {
 				</div>
 			)}
 
-			{/* Main content */}
 			{session.activeSession ? (
-				<div className="flex min-h-0 flex-1">
-					{/* Request list — left panel */}
+				<>
+					{/* Tab bar */}
 					<div
-						className="flex-1 border-r"
+						className="flex border-b"
 						style={{ borderColor: "var(--border)" }}
 					>
-						<RequestList
-							requests={capture.requests}
-							showNoise={showNoise}
-							onToggleNoise={() => setShowNoise((v) => !v)}
-						/>
+						{(
+							[
+								{ id: "capture", label: "Capture" },
+								{ id: "analysis", label: "Analysis" },
+								{ id: "export", label: "Export" },
+							] as const
+						).map((tab) => (
+							<button
+								key={tab.id}
+								onClick={() => setActiveTab(tab.id)}
+								className="px-5 py-2 text-sm font-medium transition-colors"
+								style={{
+									color:
+										activeTab === tab.id
+											? "var(--accent)"
+											: "var(--text-secondary)",
+									borderBottom:
+										activeTab === tab.id
+											? "2px solid var(--accent)"
+											: "2px solid transparent",
+								}}
+							>
+								{tab.label}
+							</button>
+						))}
 					</div>
 
-					{/* Endpoint map — right panel */}
-					<div className="flex-1">
-						<EndpointMap endpoints={capture.endpoints} />
+					{/* Tab content */}
+					<div className="min-h-0 flex-1">
+						{activeTab === "capture" && (
+							<div className="flex h-full">
+								<div
+									className="flex-1 border-r"
+									style={{
+										borderColor: "var(--border)",
+									}}
+								>
+									<RequestList
+										requests={capture.requests}
+										showNoise={showNoise}
+										onToggleNoise={() => setShowNoise((v) => !v)}
+									/>
+								</div>
+								<div className="flex-1">
+									<EndpointMap endpoints={capture.endpoints} />
+								</div>
+							</div>
+						)}
+
+						{activeTab === "analysis" && (
+							<InferencePanel
+								endpoints={capture.endpoints}
+								results={inference.results}
+								progress={inference.progress}
+								onRun={inference.run}
+								onCancel={inference.cancel}
+							/>
+						)}
+
+						{activeTab === "export" && (
+							<CollectionPreview
+								sessionName={session.activeSession?.name ?? "Untitled"}
+								endpoints={capture.endpoints}
+								results={inference.results}
+							/>
+						)}
 					</div>
-				</div>
+				</>
 			) : (
 				<div className="flex flex-1 items-center justify-center">
 					<div className="text-center">
@@ -108,7 +163,9 @@ function App() {
 							<div className="mb-8">
 								<p
 									className="mb-3 text-xs uppercase tracking-wider"
-									style={{ color: "var(--text-secondary)" }}
+									style={{
+										color: "var(--text-secondary)",
+									}}
 								>
 									Recent sessions
 								</p>

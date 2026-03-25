@@ -22,6 +22,10 @@ pub fn init_db(path: &Path) -> Result<Connection, Box<dyn std::error::Error>> {
         schema::migrate_v2(&conn)?;
         conn.execute_batch("PRAGMA user_version = 2;")?;
     }
+    if version < 3 {
+        schema::migrate_v3(&conn)?;
+        conn.execute_batch("PRAGMA user_version = 3;")?;
+    }
 
     Ok(conn)
 }
@@ -49,11 +53,13 @@ mod tests {
         conn.execute_batch("PRAGMA user_version = 1;").unwrap();
         schema::migrate_v2(&conn).unwrap();
         conn.execute_batch("PRAGMA user_version = 2;").unwrap();
+        schema::migrate_v3(&conn).unwrap();
+        conn.execute_batch("PRAGMA user_version = 3;").unwrap();
 
         let version: u32 = conn
             .query_row("PRAGMA user_version", [], |r| r.get(0))
             .unwrap();
-        assert_eq!(version, 2);
+        assert_eq!(version, 3);
     }
 
     #[test]
@@ -68,7 +74,7 @@ mod tests {
         let version: u32 = conn2
             .query_row("PRAGMA user_version", [], |r| r.get(0))
             .unwrap();
-        assert_eq!(version, 2);
+        assert_eq!(version, 3);
     }
 
     #[test]

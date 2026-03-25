@@ -3,6 +3,7 @@ import type {
 	CapturedRequest,
 	CaStatus,
 	Endpoint,
+	InferenceResult,
 	ProxyStatus,
 	Session,
 } from "../types";
@@ -63,4 +64,46 @@ export async function getCaStatus(): Promise<CaStatus> {
 
 export async function installCa(): Promise<void> {
 	return invoke("install_ca");
+}
+
+// --- Inference ---
+
+export async function saveInferenceResult(payload: {
+	endpointId: number;
+	sessionId: string;
+	inferredName: string | null;
+	inferredDescription: string | null;
+	requestBodySchema: string | null;
+	responseBodySchema: string | null;
+	pathParams: string | null;
+	queryParamDescriptions: string | null;
+	authScheme: string | null;
+	tags: string | null;
+	rawClaudeResponse: string | null;
+	tokensUsed: number;
+	modelUsed: string;
+}): Promise<number> {
+	return invoke<number>("save_inference_result", payload);
+}
+
+export async function getInferenceResults(
+	sessionId: string,
+): Promise<InferenceResult[]> {
+	return invoke<InferenceResult[]>("get_inference_results", { sessionId });
+}
+
+export async function getRequestsByIds(
+	ids: number[],
+): Promise<CapturedRequest[]> {
+	return invoke<CapturedRequest[]>("get_requests_by_ids", { ids });
+}
+
+// --- Settings ---
+
+export async function getSetting(key: string): Promise<string | null> {
+	return invoke<string | null>("get_setting", { key });
+}
+
+export async function setSetting(key: string, value: string): Promise<void> {
+	return invoke("set_setting", { key, value });
 }

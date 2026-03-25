@@ -1,6 +1,6 @@
 use rusqlite::{params, Connection};
 
-use crate::models::{CapturedRequest, Endpoint, Session};
+use crate::models::{CapturedRequest, Endpoint, InferenceResult, Session};
 
 pub fn insert_session(
     conn: &Connection,
@@ -253,6 +253,162 @@ pub fn update_session_status(
     conn.execute(
         "UPDATE sessions SET status = ?2, ended_at = CASE WHEN ?2 = 'complete' THEN CURRENT_TIMESTAMP ELSE ended_at END WHERE id = ?1",
         params![session_id, status],
+    )?;
+    Ok(())
+}
+
+// --- Inference Results ---
+
+#[allow(clippy::too_many_arguments)]
+pub fn save_inference_result(
+    conn: &Connection,
+    endpoint_id: i64,
+    session_id: &str,
+    inferred_name: Option<&str>,
+    inferred_description: Option<&str>,
+    request_body_schema: Option<&str>,
+    response_body_schema: Option<&str>,
+    path_params: Option<&str>,
+    query_param_descriptions: Option<&str>,
+    auth_scheme: Option<&str>,
+    tags: Option<&str>,
+    raw_claude_response: Option<&str>,
+    tokens_used: Option<i64>,
+    model_used: Option<&str>,
+) -> Result<i64, rusqlite::Error> {
+    conn.execute(
+        "INSERT INTO inference_results (endpoint_id, session_id, inferred_name, inferred_description,
+            request_body_schema, response_body_schema, path_params, query_param_descriptions,
+            auth_scheme, tags, raw_claude_response, tokens_used, model_used)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
+        params![
+            endpoint_id,
+            session_id,
+            inferred_name,
+            inferred_description,
+            request_body_schema,
+            response_body_schema,
+            path_params,
+            query_param_descriptions,
+            auth_scheme,
+            tags,
+            raw_claude_response,
+            tokens_used,
+            model_used,
+        ],
+    )?;
+    Ok(conn.last_insert_rowid())
+}
+
+pub fn get_inference_results(
+    conn: &Connection,
+    session_id: &str,
+) -> Result<Vec<InferenceResult>, rusqlite::Error> {
+    let mut stmt = conn.prepare(
+        "SELECT id, endpoint_id, session_id, inferred_name, inferred_description,
+                request_body_schema, response_body_schema, path_params, query_param_descriptions,
+                auth_scheme, tags, raw_claude_response, tokens_used, inferred_at, model_used
+         FROM inference_results WHERE session_id = ?1
+         ORDER BY id ASC",
+    )?;
+    let results = stmt
+        .query_map(params![session_id], |row| {
+            Ok(InferenceResult {
+                id: row.get(0)?,
+                endpoint_id: row.get(1)?,
+                session_id: row.get(2)?,
+                inferred_name: row.get(3)?,
+                inferred_description: row.get(4)?,
+                request_body_schema: row.get(5)?,
+                response_body_schema: row.get(6)?,
+                path_params: row.get(7)?,
+                query_param_descriptions: row.get(8)?,
+                auth_scheme: row.get(9)?,
+                tags: row.get(10)?,
+                raw_claude_response: row.get(11)?,
+                tokens_used: row.get(12)?,
+                inferred_at: row.get(13)?,
+                model_used: row.get(14)?,
+            })
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(results)
+}
+
+pub fn get_requests_by_ids(
+    conn: &Connection,
+    ids: &[i64],
+) -> Result<Vec<CapturedRequest>, rusqlite::Error> {
+    if ids.is_empty() {
+        return Ok(vec![]);
+    }
+
+    let placeholders: Vec<String> = ids.iter().map(|_| "?".to_string()).collect();
+    let sql = format!(
+        "SELECT id, session_id, capture_source, method, url, normalized_path, host, path,
+                query_params, request_headers, request_body, request_content_type,
+                response_status, response_headers, response_body, response_content_type,
+                duration_ms, captured_at, is_noise, is_duplicate
+         FROM requests WHERE id IN ({})
+         ORDER BY id ASC",
+        placeholders.join(",")
+    );
+
+    let mut stmt = conn.prepare(&sql)?;
+    let params: Vec<&dyn rusqlite::types::ToSql> = ids
+        .iter()
+        .map(|id| id as &dyn rusqlite::types::ToSql)
+        .collect();
+
+    let requests = stmt
+        .query_map(params.as_slice(), |row| {
+            Ok(CapturedRequest {
+                id: row.get(0)?,
+                session_id: row.get(1)?,
+                capture_source: row.get(2)?,
+                method: row.get(3)?,
+                url: row.get(4)?,
+                normalized_path: row.get(5)?,
+                host: row.get(6)?,
+                path: row.get(7)?,
+                query_params: row.get(8)?,
+                request_headers: row.get(9)?,
+                request_body: row.get(10)?,
+                request_content_type: row.get(11)?,
+                response_status: row.get(12)?,
+                response_headers: row.get(13)?,
+                response_body: row.get(14)?,
+                response_content_type: row.get(15)?,
+                duration_ms: row.get(16)?,
+                captured_at: row.get(17)?,
+                is_noise: row.get::<_, i64>(18)? != 0,
+                is_duplicate: row.get::<_, i64>(19)? != 0,
+            })
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(requests)
+}
+
+// --- Settings ---
+
+pub fn get_setting(conn: &Connection, key: &str) -> Result<Option<String>, rusqlite::Error> {
+    let result = conn.query_row(
+        "SELECT value FROM settings WHERE key = ?1",
+        params![key],
+        |row| row.get(0),
+    );
+    match result {
+        Ok(value) => Ok(Some(value)),
+        Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+        Err(e) => Err(e),
+    }
+}
+
+pub fn set_setting(conn: &Connection, key: &str, value: &str) -> Result<(), rusqlite::Error> {
+    conn.execute(
+        "INSERT INTO settings (key, value) VALUES (?1, ?2)
+         ON CONFLICT(key) DO UPDATE SET value = ?2",
+        params![key, value],
     )?;
     Ok(())
 }

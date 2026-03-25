@@ -75,3 +75,23 @@ pub struct ProxyStatus {
     pub ca_installed: bool,
     pub ca_path: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InferenceResult {
+    pub id: i64,
+    pub endpoint_id: i64,
+    pub session_id: String,
+    pub inferred_name: Option<String>,
+    pub inferred_description: Option<String>,
+    pub request_body_schema: Option<String>,
+    pub response_body_schema: Option<String>,
+    pub path_params: Option<String>,
+    pub query_param_descriptions: Option<String>,
+    pub auth_scheme: Option<String>,
+    pub tags: Option<String>,
+    pub raw_claude_response: Option<String>,
+    pub tokens_used: Option<i64>,
+    pub inferred_at: String,
+    pub model_used: Option<String>,
+}
