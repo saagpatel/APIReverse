@@ -253,4 +253,62 @@ mod tests {
             None
         );
     }
+
+    #[test]
+    fn test_domain_matches_exact_and_subdomain() {
+        assert!(domain_matches("example.com", "example.com"));
+        assert!(domain_matches("sub.example.com", "example.com"));
+        assert!(domain_matches("deep.sub.example.com", "example.com"));
+        // Must not match partial suffix — "notexample.com" should NOT match "example.com"
+        assert!(!domain_matches("notexample.com", "example.com"));
+    }
+
+    #[test]
+    fn test_has_noise_extension_all_types() {
+        for ext in &[
+            ".js", ".css", ".woff", ".woff2", ".ttf", ".png", ".jpg", ".jpeg", ".gif", ".svg",
+            ".ico", ".map", ".br",
+        ] {
+            let path = format!("/static/file{ext}");
+            assert!(has_noise_extension(&path), "expected noise for path {path}");
+        }
+        // Non-noise extensions
+        assert!(!has_noise_extension("/api/data.json"));
+        assert!(!has_noise_extension("/v1/users"));
+    }
+
+    #[test]
+    fn test_preset_domains_known_and_unknown() {
+        assert!(!preset_domains("analytics").is_empty());
+        assert!(!preset_domains("cdn").is_empty());
+        assert!(!preset_domains("social").is_empty());
+        assert!(!preset_domains("fonts").is_empty());
+        // Unknown preset returns empty slice
+        assert!(preset_domains("nonexistent").is_empty());
+    }
+
+    #[test]
+    fn test_detect_noise_reason_allowlist() {
+        let config = crate::models::FilterConfig {
+            allowlist: vec!["trusted.com".to_string()],
+            ..Default::default()
+        };
+        assert_eq!(
+            detect_noise_reason("other.com", "/api", &config),
+            Some("not in allowlist")
+        );
+        assert_eq!(detect_noise_reason("trusted.com", "/api", &config), None);
+    }
+
+    #[test]
+    fn test_detect_noise_reason_user_denylist() {
+        let config = crate::models::FilterConfig {
+            denylist: vec!["tracker.internal".to_string()],
+            ..Default::default()
+        };
+        assert_eq!(
+            detect_noise_reason("tracker.internal", "/ping", &config),
+            Some("user denylist")
+        );
+    }
 }

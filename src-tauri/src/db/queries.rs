@@ -613,4 +613,119 @@ mod tests {
         let page3 = get_requests(&conn, "s1", 2, 4).unwrap();
         assert_eq!(page3.len(), 1);
     }
+
+    #[test]
+    fn test_settings_get_set_and_overwrite() {
+        let conn = setup_test_db();
+        db::schema::migrate_v3(&conn).unwrap();
+        // Missing key returns None
+        assert_eq!(get_setting(&conn, "api_key").unwrap(), None);
+
+        set_setting(&conn, "api_key", "sk-test-123").unwrap();
+        assert_eq!(
+            get_setting(&conn, "api_key").unwrap(),
+            Some("sk-test-123".to_string())
+        );
+
+        // Overwrite via upsert
+        set_setting(&conn, "api_key", "sk-new-456").unwrap();
+        assert_eq!(
+            get_setting(&conn, "api_key").unwrap(),
+            Some("sk-new-456".to_string())
+        );
+    }
+
+    #[test]
+    fn test_rename_and_delete_session() {
+        let conn = setup_test_db();
+        insert_session(&conn, "s1", "Original", "extension").unwrap();
+
+        rename_session(&conn, "s1", "Renamed").unwrap();
+        let session = get_session(&conn, "s1").unwrap();
+        assert_eq!(session.name, "Renamed");
+
+        delete_session(&conn, "s1").unwrap();
+        let sessions = list_sessions(&conn).unwrap();
+        assert_eq!(sessions.len(), 0);
+    }
+
+    #[test]
+    fn test_update_session_status() {
+        let conn = setup_test_db();
+        insert_session(&conn, "s1", "Test", "mitm").unwrap();
+
+        update_session_status(&conn, "s1", "complete").unwrap();
+        let session = get_session(&conn, "s1").unwrap();
+        assert_eq!(session.status, "complete");
+        // ended_at should be set for "complete" status
+        assert!(session.ended_at.is_some());
+    }
+
+    #[test]
+    fn test_get_requests_after() {
+        let conn = setup_test_db();
+        insert_session(&conn, "s1", "Test", "extension").unwrap();
+
+        let id1 = insert_request(
+            &conn,
+            "s1",
+            "extension",
+            "GET",
+            "https://api.example.com/a",
+            "/a",
+            "api.example.com",
+            "/a",
+            None,
+            None,
+            Some(200),
+            None,
+            None,
+        )
+        .unwrap();
+        let _id2 = insert_request(
+            &conn,
+            "s1",
+            "extension",
+            "GET",
+            "https://api.example.com/b",
+            "/b",
+            "api.example.com",
+            "/b",
+            None,
+            None,
+            Some(200),
+            None,
+            None,
+        )
+        .unwrap();
+        let _id3 = insert_request(
+            &conn,
+            "s1",
+            "extension",
+            "GET",
+            "https://api.example.com/c",
+            "/c",
+            "api.example.com",
+            "/c",
+            None,
+            None,
+            Some(200),
+            None,
+            None,
+        )
+        .unwrap();
+
+        // Only the two requests after id1 should be returned
+        let after = get_requests_after(&conn, "s1", id1).unwrap();
+        assert_eq!(after.len(), 2);
+        assert!(after.iter().all(|r| r.id > id1));
+    }
+
+    #[test]
+    fn test_get_requests_by_ids_empty_slice() {
+        let conn = setup_test_db();
+        // Empty slice must return empty vec without error
+        let results = get_requests_by_ids(&conn, &[]).unwrap();
+        assert_eq!(results.len(), 0);
+    }
 }

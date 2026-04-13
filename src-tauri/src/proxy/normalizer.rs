@@ -173,4 +173,35 @@ mod tests {
         );
         assert_eq!(normalize_path("/commits/ABCDEF01"), "/commits/{id}");
     }
+
+    #[test]
+    fn test_hex_boundary_exactly_seven_chars_preserved() {
+        // Hex strings shorter than 8 chars must NOT be replaced
+        assert_eq!(normalize_path("/api/abcdef0"), "/api/abcdef0"); // 7 hex chars → preserved
+                                                                    // 7-digit pure integer IS replaced (matched as integer, not hex)
+        assert_eq!(normalize_path("/api/1234567"), "/api/{id}");
+    }
+
+    #[test]
+    fn test_version_variants() {
+        assert_eq!(normalize_path("/v1/resources"), "/v1/resources");
+        assert_eq!(normalize_path("/v100/data"), "/v100/data");
+        // "version" word (not v\d+) is preserved as-is
+        assert_eq!(normalize_path("/version/info"), "/version/info");
+    }
+
+    #[test]
+    fn test_all_digits_segment_always_replaced() {
+        assert_eq!(normalize_path("/orders/0"), "/orders/{id}");
+        assert_eq!(normalize_path("/orders/1234567890"), "/orders/{id}");
+    }
+
+    #[test]
+    fn test_mixed_alphanumeric_non_hex_boundary() {
+        // 9-char segment with non-hex letters (g-z) — can't match RE_HEX, below 10-char threshold
+        // "abcXYZde5" has 'X','Y','Z' which are non-hex uppercase (lowercased: x,y,z — non hex)
+        assert_eq!(normalize_path("/api/abcXYZde5"), "/api/abcXYZde5"); // 9 chars, non-hex → preserved
+                                                                        // 10-char non-hex mixed → replaced by mixed-alphanumeric rule
+        assert_eq!(normalize_path("/api/abcXYZde56"), "/api/{id}"); // 10 chars, mixed → replaced
+    }
 }
