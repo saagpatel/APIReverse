@@ -74,7 +74,7 @@ pub fn migrate_v2(conn: &Connection) -> Result<(), rusqlite::Error> {
             raw_claude_response TEXT,
             tokens_used INTEGER,
             inferred_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            model_used TEXT DEFAULT 'claude-sonnet-4-20250514'
+            model_used TEXT DEFAULT 'claude-sonnet-4-6'
         );
         CREATE INDEX idx_inference_endpoint ON inference_results(endpoint_id);
         CREATE INDEX idx_inference_session ON inference_results(session_id);",

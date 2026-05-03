@@ -17,7 +17,7 @@
                                                   CaptureBar / RequestList / EndpointMap
                                                   InferencePanel / CollectionPreview
                                                            │
-                                          [Anthropic API — claude-sonnet-4-20250514]
+                                          [Anthropic API — claude-sonnet-4-6]
                                           (sequential batch, auth headers stripped)
                                                            │
                                                [postman-collection npm SDK]
@@ -166,7 +166,7 @@ CREATE TABLE inference_results (
     raw_claude_response TEXT,
     tokens_used INTEGER,
     inferred_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    model_used TEXT DEFAULT 'claude-sonnet-4-20250514'
+    model_used TEXT DEFAULT 'claude-sonnet-4-6'
 );
 CREATE INDEX idx_inference_endpoint ON inference_results(endpoint_id);
 CREATE INDEX idx_inference_session ON inference_results(session_id);
@@ -323,7 +323,7 @@ export interface PostmanVariable { key: string; value: string; description?: str
 | Endpoint | `https://api.anthropic.com/v1/messages` |
 | Method | POST |
 | Auth | Handled by Claude.ai artifact proxy (no key in code) |
-| Model | `claude-sonnet-4-20250514` |
+| Model | `claude-sonnet-4-6` |
 | max_tokens | 1000 |
 | Rate limit | Sequential calls only — no parallel inference |
 | Payload size | Max 6,000 tokens per request; response body truncated to 3,000 chars before sending |
