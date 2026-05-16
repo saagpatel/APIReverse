@@ -47,3 +47,58 @@ Requires Anthropic API key set in the app's settings panel (stored in SQLite, ne
 - Safari WebExtensions not supported (deferred from original scope)
 - OpenAPI and Markdown export formats not implemented — Postman Collection v2.1 only
 - Body capture for large binary payloads may be truncated
+
+<!-- portfolio-context:start -->
+# Portfolio Context
+
+## What This Project Is
+
+APIReverse is an active local project in the /Users/d/Projects portfolio.
+
+## Current State
+
+Phases 0-4 complete — all planned functionality shipped:
+- Phase 0: Tauri scaffold, SQLite schema, native host binary, Chrome extension manifest
+- Phase 1: Browser extension capture, live request view, noise filtering
+- Phase 2: MITM proxy engine, CA management, Firefox extension support
+- Phase 3: Claude inference pipeline, Postman Collection export
+- Phase 4: Session management, filter config, body capture, onboarding flow
+
+## Stack
+
+- **Tauri**: 2.x — desktop shell + Rust backend
+- **React**: 18.x — hooks-based, no class components
+- **TypeScript**: 5.x — strict mode throughout
+- **Rust**: stable 2024 — proxy engine, SQLite, Tauri commands
+- **hudsucker**: 0.10.x — pure-Rust async MITM HTTPS proxy
+- **rcgen**: 0.13.x — per-install CA cert generation
+- **sqlx**: 0.7.x — typed SQLite queries, one DB file per session
+- **postman-collection (npm)**: 4.x — Postman Collection v2.1 construction + validation
+- **Tailwind CSS**: 3.x — dark theme, utility classes only
+
+## How To Run
+
+```bash
+# Install dependencies
+npm install
+
+# Development
+npm run tauri dev
+
+# Production build
+npm run tauri build
+```
+
+Requires Anthropic API key set in the app's settings panel (stored in SQLite, never in env files).
+
+## Known Risks
+
+- Safari WebExtensions not supported (deferred from original scope)
+- OpenAPI and Markdown export formats not implemented — Postman Collection v2.1 only
+- Body capture for large binary payloads may be truncated
+
+## Next Recommended Move
+
+Use this context plus the README and supporting docs to resume the next active task, then promote the repo beyond minimum-viable by capturing a dedicated handoff, roadmap, or discovery artifact.
+
+<!-- portfolio-context:end -->
