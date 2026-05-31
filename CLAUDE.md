@@ -7,11 +7,10 @@ A local Tauri 2 + React desktop app that intercepts HTTP/S traffic via two captu
 - **React**: 18.x — hooks-based, no class components
 - **TypeScript**: 5.x — strict mode throughout
 - **Rust**: stable 2024 — proxy engine, SQLite, Tauri commands
-- **hudsucker**: 0.10.x — pure-Rust async MITM HTTPS proxy
+- **hudsucker**: 0.24.x — pure-Rust async MITM HTTPS proxy
 - **rcgen**: 0.13.x — per-install CA cert generation
-- **sqlx**: 0.7.x — typed SQLite queries, one DB file per session
-- **postman-collection (npm)**: 4.x — Postman Collection v2.1 construction + validation
-- **Tailwind CSS**: 3.x — dark theme, utility classes only
+- **rusqlite**: 0.31.x — SQLite via bundled feature; sessions are rows in a single `apispy.db`
+- **Tailwind CSS**: 4.x — dark theme, utility classes only
 
 ## Status
 Phases 0-4 complete — all planned functionality shipped:
@@ -39,7 +38,7 @@ Requires Anthropic API key set in the app's settings panel (stored in SQLite, ne
 - `src-tauri/src/` — Rust: MITM proxy (hudsucker), SQLite session storage, CA cert generation, Tauri commands
 - `src/lib/tauri.ts` — all typed Tauri command wrappers (never call `invoke()` directly from components)
 - `src/components/` — React UI: request list, session manager, inference panel, export controls
-- One SQLite `.db` file per session in `~/Library/Application Support/apispy/sessions/`
+- Single SQLite database at `~/Library/Application Support/apispy/apispy.db`; each session is a row in the `sessions` table
 - Chrome MV3 + Firefox MV2 extensions in `extension/` directory
 - Claude inference runs sequentially (not parallelized) to avoid rate limits
 
@@ -70,11 +69,10 @@ Phases 0-4 complete — all planned functionality shipped:
 - **React**: 18.x — hooks-based, no class components
 - **TypeScript**: 5.x — strict mode throughout
 - **Rust**: stable 2024 — proxy engine, SQLite, Tauri commands
-- **hudsucker**: 0.10.x — pure-Rust async MITM HTTPS proxy
+- **hudsucker**: 0.24.x — pure-Rust async MITM HTTPS proxy
 - **rcgen**: 0.13.x — per-install CA cert generation
-- **sqlx**: 0.7.x — typed SQLite queries, one DB file per session
-- **postman-collection (npm)**: 4.x — Postman Collection v2.1 construction + validation
-- **Tailwind CSS**: 3.x — dark theme, utility classes only
+- **rusqlite**: 0.31.x — SQLite via bundled feature; sessions are rows in a single `apispy.db`
+- **Tailwind CSS**: 4.x — dark theme, utility classes only
 
 ## How To Run
 

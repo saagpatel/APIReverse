@@ -1,6 +1,6 @@
 # APIReverse
 
-[![Rust](https://img.shields.io/badge/Rust-%23dea584?style=flat-square&logo=rust)](#) [![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?style=flat-square&logo=typescript)](#) [![Status](https://img.shields.io/badge/status-WIP-yellow?style=flat-square)](#)
+[![Rust](https://img.shields.io/badge/Rust-%23dea584?style=flat-square&logo=rust)](#) [![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?style=flat-square&logo=typescript)](#) [![Status](https://img.shields.io/badge/status-v1.0.0-green?style=flat-square)](#)
 
 > Intercept HTTP/S traffic, group endpoints by pattern, and export an AI-annotated Postman Collection — all locally.
 
@@ -20,7 +20,6 @@ APIReverse captures live API traffic through a Chrome/Firefox browser extension 
 git clone https://github.com/saagpatel/APIReverse.git
 cd APIReverse
 npm install
-export ANTHROPIC_API_KEY=sk-ant-...
 npm run tauri dev
 ```
 
@@ -34,10 +33,10 @@ On first launch, the onboarding modal walks you through CA certificate installat
 | Proxy engine | Rust + hudsucker (MITM HTTPS) |
 | Frontend | React 18, TypeScript 5, Tailwind CSS 4 |
 | Storage | SQLite via rusqlite (one DB per session) |
-| AI inference | Claude via `@anthropic-ai/sdk` |
+| AI inference | Claude Sonnet via `@anthropic-ai/sdk` |
 | Export | Postman Collection v2.1 |
 
-> **Status: Work in Progress** — Capture, deduplication, and Postman export functional. AI annotation integration in progress.
+Set your Anthropic API key in the app's **Settings** panel — stored locally in SQLite, never in environment variables.
 
 ## License
 
