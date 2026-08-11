@@ -52,7 +52,7 @@ Requires Anthropic API key set in the app's settings panel (stored in SQLite, ne
 
 ## What This Project Is
 
-APIReverse is an active local project in the /Users/d/Projects portfolio.
+APIReverse is an active local project in the ~/Projects portfolio.
 
 ## Current State
 
