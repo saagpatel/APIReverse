@@ -10,7 +10,7 @@
 		"tauri": "tauri"
 	},
 	"dependencies": {
-		"@anthropic-ai/sdk": "0.122.0",
+		"@anthropic-ai/sdk": "0.123.0",
 		"@tauri-apps/api": "^2",
 		"@tauri-apps/plugin-dialog": "^2",
 		"@tauri-apps/plugin-fs": "^2",
@@ -24,7 +24,7 @@
 		"@tailwindcss/vite": "^4",
 		"@tauri-apps/cli": "^2",
 		"@types/react": "^19.2.18",
-		"@types/react-dom": "^19.2.5",
+		"@types/react-dom": "^19.2.7",
 		"@vitejs/plugin-react": "^6.1.1",
 		"tailwindcss": "^4",
 		"typescript": "~7.0.2",
