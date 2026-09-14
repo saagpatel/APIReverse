@@ -10,25 +10,25 @@
 		"tauri": "tauri"
 	},
 	"dependencies": {
-		"@anthropic-ai/sdk": "0.122.0",
+		"@anthropic-ai/sdk": "0.125.0",
 		"@tauri-apps/api": "^2",
 		"@tauri-apps/plugin-dialog": "^2",
 		"@tauri-apps/plugin-fs": "^2",
 		"lodash": "4.18.1",
 		"postman-collection": "5.3.1",
-		"react": "^19.2.8",
-		"react-dom": "^19.2.8",
+		"react": "^19.3.0",
+		"react-dom": "^19.3.0",
 		"uuid": "14.0.2"
 	},
 	"devDependencies": {
 		"@tailwindcss/vite": "^4",
 		"@tauri-apps/cli": "^2",
-		"@types/react": "^19.2.18",
-		"@types/react-dom": "^19.2.5",
+		"@types/react": "^19.3.0",
+		"@types/react-dom": "^19.3.0",
 		"@vitejs/plugin-react": "^6.1.1",
 		"tailwindcss": "^4",
 		"typescript": "~7.0.2",
-		"vite": "8.2.2"
+		"vite": "8.3.0"
 	},
 	"overrides": {
 		"postman-collection": {
