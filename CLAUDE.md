@@ -32,7 +32,9 @@ npm run tauri dev
 npm run tauri build
 ```
 
-Requires Anthropic API key set in the app's settings panel (stored in SQLite, never in env files).
+See [Local verification](CONTRIBUTING.md#local-verification) for prerequisites,
+frontend checks, and focused/native tests. An Anthropic API key is needed only
+for inference, set in the app's settings panel (stored in SQLite, never in env files).
 
 ## Architecture
 - `src-tauri/src/` — Rust: MITM proxy (hudsucker), SQLite session storage, CA cert generation, Tauri commands
@@ -87,7 +89,9 @@ npm run tauri dev
 npm run tauri build
 ```
 
-Requires Anthropic API key set in the app's settings panel (stored in SQLite, never in env files).
+See [Local verification](CONTRIBUTING.md#local-verification) for prerequisites,
+frontend checks, and focused/native tests. An Anthropic API key is needed only
+for inference, set in the app's settings panel (stored in SQLite, never in env files).
 
 ## Known Risks
 
