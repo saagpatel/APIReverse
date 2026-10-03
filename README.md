@@ -23,6 +23,9 @@ npm install
 npm run tauri dev
 ```
 
+For build prerequisites and local tests that do not launch capture or inference,
+see [Local verification](CONTRIBUTING.md#local-verification).
+
 On first launch, the onboarding modal walks you through CA certificate installation for HTTPS interception. Load the unpacked extension from `extension/chrome/` or `extension/firefox/`.
 
 ## Tech Stack
